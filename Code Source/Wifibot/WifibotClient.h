@@ -1,3 +1,4 @@
+
 #pragma once
 #ifndef    CLIENT_H
 #define    CLIENT_H
@@ -66,6 +67,8 @@ public:
 	
 	void SendConsigne(CPoint point);
 	void SendConsigneUdp(CPoint point);
+	void SendConsigneCRC(CPoint point);
+	short Crc16(unsigned char *Adresse_tab, unsigned char Taille_max);
 	bool ConnectToRobot(char* ip,int port);
 	void DisconnectRobot();
 	bool ConnectToRobotUdp(char* ip,int port);
@@ -107,6 +110,7 @@ private:
 	int minmax,moyx,moyy,smg,smd,vmd,vmg,comg,comd,stop;
 	int ctrlg,ctrld;
 	char sendbuf[2];
+	unsigned char sendBuffer[9];
     char rcvbuf[7],rcvbuftemp[7];	
 	int udp;
 	char myip[30];

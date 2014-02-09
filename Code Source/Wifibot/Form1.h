@@ -1,10 +1,11 @@
+
 #pragma once
 #include "WifibotClient.h"
 #include "time.h"
-//#include <thread>
 
 #define DROITE x
 #define GAUCHE y
+
 namespace Wifibot {
 
 	using namespace System;
@@ -13,66 +14,64 @@ namespace Wifibot {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
-
-
-	/****************** VARIABLES ****************/
+	
+	#pragma region vars
 
 	CPoint direction;
 	WifibotClient robot;
 
 	int droite(0), gauche(0);
-
 	SensorData capteurs;
+
+	bool connexionReussie = false;
+
+	#pragma endregion vars
 	
-
-	/*********************************************/
-
 	public ref class Form1 : public System::Windows::Forms::Form
 	{
-	public: Form1(void)
-			{
-				InitializeComponent();
-			}
 
-	protected:~Form1()
-			{
-				if (components)
-					delete components;
-			}
+	#pragma region Winform
 
-	private: System::Windows::Forms::GroupBox^  groupBox1;
-	private: System::Windows::Forms::RadioButton^  rbSimulateur;
-	private: System::Windows::Forms::RadioButton^  rbRobot;
-	private: System::Windows::Forms::Button^  btConnecter;
-	private: System::Windows::Forms::Button^  btDeconnecter;
-	private: System::Windows::Forms::Button^  btArriere;
-	private: System::Windows::Forms::Button^  btStop;
-	private: System::Windows::Forms::Button^  btAvant;
-	private: System::Windows::Forms::Button^  btGauche;
-	private: System::Windows::Forms::Button^  btDroite;
-	private: System::Windows::Forms::Timer^  timer1;
-	private: System::Windows::Forms::WebBrowser^  webBrowser1;
+		public: Form1(void)
+		{
+			InitializeComponent();
+		}
 
-	private: System::Windows::Forms::Label^  lbMoteurGauche;
-	private: System::Windows::Forms::Label^  lbMoteurDroite;
-	private: System::Windows::Forms::Label^  lbBatterie;
-	private: System::Windows::Forms::Label^  lbIRGauche;
-	private: System::Windows::Forms::Label^  lbIRDroite;
+		protected:~Form1()
+		{
+			if (components)
+				delete components;
+		}
 
-			 // Textes Moteur IR Batterie ect...
-	private: System::Windows::Forms::Label^  label2;
-	private: System::Windows::Forms::Label^  label3;
-	private: System::Windows::Forms::Label^  label4;
-	private: System::Windows::Forms::Label^  label5;
-	private: System::Windows::Forms::Label^  label6;
+		private: System::Windows::Forms::GroupBox^  groupBox1;
+		private: System::Windows::Forms::RadioButton^  rbSimulateur;
+		private: System::Windows::Forms::RadioButton^  rbRobot;
+		private: System::Windows::Forms::Button^  btConnecter;
 
+		private: System::Windows::Forms::Button^  btArriere;
+		private: System::Windows::Forms::Button^  btStop;
+		private: System::Windows::Forms::Button^  btAvant;
+		private: System::Windows::Forms::Button^  btGauche;
+		private: System::Windows::Forms::Button^  btDroite;
+		private: System::Windows::Forms::Timer^  timer1;
+		private: System::Windows::Forms::WebBrowser^  webBrowser1;
 
-
-
-	private: System::ComponentModel::IContainer^  components;
+		private: System::Windows::Forms::Label^  lbMoteurGauche;
+		private: System::Windows::Forms::Label^  lbMoteurDroite;
+		private: System::Windows::Forms::Label^  lbBatterie;
+		private: System::Windows::Forms::Label^  lbIRGauche;
+		private: System::Windows::Forms::Label^  lbIRDroite;
+		private: System::Windows::Forms::Label^  label2;
+		private: System::Windows::Forms::Label^  label3;
+		private: System::Windows::Forms::Label^  label4;
+		private: System::Windows::Forms::Label^  label5;
+		private: System::Windows::Forms::Label^  label6;
+		private: System::ComponentModel::BackgroundWorker^  bgWorker;
 
 
-#pragma region Windows Form Designer generated code
+
+		private: System::ComponentModel::IContainer^  components;
+
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
@@ -80,7 +79,6 @@ namespace Wifibot {
 			this->rbSimulateur = (gcnew System::Windows::Forms::RadioButton());
 			this->rbRobot = (gcnew System::Windows::Forms::RadioButton());
 			this->btConnecter = (gcnew System::Windows::Forms::Button());
-			this->btDeconnecter = (gcnew System::Windows::Forms::Button());
 			this->btArriere = (gcnew System::Windows::Forms::Button());
 			this->btStop = (gcnew System::Windows::Forms::Button());
 			this->btAvant = (gcnew System::Windows::Forms::Button());
@@ -98,6 +96,7 @@ namespace Wifibot {
 			this->label4 = (gcnew System::Windows::Forms::Label());
 			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->bgWorker = (gcnew System::ComponentModel::BackgroundWorker());
 			this->groupBox1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -105,9 +104,9 @@ namespace Wifibot {
 			// 
 			this->groupBox1->Controls->Add(this->rbSimulateur);
 			this->groupBox1->Controls->Add(this->rbRobot);
-			this->groupBox1->Location = System::Drawing::Point(22, 477);
+			this->groupBox1->Location = System::Drawing::Point(12, 272);
 			this->groupBox1->Name = L"groupBox1";
-			this->groupBox1->Size = System::Drawing::Size(200, 39);
+			this->groupBox1->Size = System::Drawing::Size(186, 39);
 			this->groupBox1->TabIndex = 0;
 			this->groupBox1->TabStop = false;
 			// 
@@ -115,7 +114,7 @@ namespace Wifibot {
 			// 
 			this->rbSimulateur->AutoSize = true;
 			this->rbSimulateur->Checked = true;
-			this->rbSimulateur->Location = System::Drawing::Point(115, 16);
+			this->rbSimulateur->Location = System::Drawing::Point(98, 16);
 			this->rbSimulateur->Name = L"rbSimulateur";
 			this->rbSimulateur->Size = System::Drawing::Size(74, 17);
 			this->rbSimulateur->TabIndex = 1;
@@ -139,9 +138,9 @@ namespace Wifibot {
 			// 
 			// btConnecter
 			// 
-			this->btConnecter->Location = System::Drawing::Point(55, 522);
+			this->btConnecter->Location = System::Drawing::Point(28, 327);
 			this->btConnecter->Name = L"btConnecter";
-			this->btConnecter->Size = System::Drawing::Size(133, 54);
+			this->btConnecter->Size = System::Drawing::Size(150, 43);
 			this->btConnecter->TabIndex = 1;
 			this->btConnecter->Text = L"Connecter";
 			this->btConnecter->UseVisualStyleBackColor = true;
@@ -149,21 +148,9 @@ namespace Wifibot {
 			this->btConnecter->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
 			this->btConnecter->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
 			// 
-			// btDeconnecter
-			// 
-			this->btDeconnecter->Location = System::Drawing::Point(55, 585);
-			this->btDeconnecter->Name = L"btDeconnecter";
-			this->btDeconnecter->Size = System::Drawing::Size(133, 37);
-			this->btDeconnecter->TabIndex = 2;
-			this->btDeconnecter->Text = L"Déconnecter";
-			this->btDeconnecter->UseVisualStyleBackColor = true;
-			this->btDeconnecter->Click += gcnew System::EventHandler(this, &Form1::btDeconnecter_Click);
-			this->btDeconnecter->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
-			this->btDeconnecter->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
-			// 
 			// btArriere
 			// 
-			this->btArriere->Location = System::Drawing::Point(426, 579);
+			this->btArriere->Location = System::Drawing::Point(338, 374);
 			this->btArriere->Name = L"btArriere";
 			this->btArriere->RightToLeft = System::Windows::Forms::RightToLeft::Yes;
 			this->btArriere->Size = System::Drawing::Size(99, 43);
@@ -178,7 +165,7 @@ namespace Wifibot {
 			// 
 			// btStop
 			// 
-			this->btStop->Location = System::Drawing::Point(426, 533);
+			this->btStop->Location = System::Drawing::Point(338, 328);
 			this->btStop->Name = L"btStop";
 			this->btStop->Size = System::Drawing::Size(99, 43);
 			this->btStop->TabIndex = 4;
@@ -190,7 +177,7 @@ namespace Wifibot {
 			// 
 			// btAvant
 			// 
-			this->btAvant->Location = System::Drawing::Point(426, 487);
+			this->btAvant->Location = System::Drawing::Point(338, 282);
 			this->btAvant->Name = L"btAvant";
 			this->btAvant->Size = System::Drawing::Size(99, 43);
 			this->btAvant->TabIndex = 5;
@@ -204,7 +191,7 @@ namespace Wifibot {
 			// 
 			// btGauche
 			// 
-			this->btGauche->Location = System::Drawing::Point(321, 533);
+			this->btGauche->Location = System::Drawing::Point(233, 328);
 			this->btGauche->Name = L"btGauche";
 			this->btGauche->Size = System::Drawing::Size(99, 43);
 			this->btGauche->TabIndex = 6;
@@ -218,7 +205,7 @@ namespace Wifibot {
 			// 
 			// btDroite
 			// 
-			this->btDroite->Location = System::Drawing::Point(531, 533);
+			this->btDroite->Location = System::Drawing::Point(443, 328);
 			this->btDroite->Name = L"btDroite";
 			this->btDroite->Size = System::Drawing::Size(99, 43);
 			this->btDroite->TabIndex = 7;
@@ -232,6 +219,7 @@ namespace Wifibot {
 			// 
 			// timer1
 			// 
+			this->timer1->Interval = 200;
 			this->timer1->Tick += gcnew System::EventHandler(this, &Form1::timer1_Tick);
 			// 
 			// webBrowser1
@@ -239,14 +227,14 @@ namespace Wifibot {
 			this->webBrowser1->Location = System::Drawing::Point(3, 2);
 			this->webBrowser1->MinimumSize = System::Drawing::Size(20, 20);
 			this->webBrowser1->Name = L"webBrowser1";
-			this->webBrowser1->Size = System::Drawing::Size(989, 479);
+			this->webBrowser1->Size = System::Drawing::Size(734, 264);
 			this->webBrowser1->TabIndex = 8;
 			this->webBrowser1->Url = (gcnew System::Uri(L"http://192.168.1.106", System::UriKind::Absolute));
 			// 
 			// lbMoteurGauche
 			// 
 			this->lbMoteurGauche->AutoSize = true;
-			this->lbMoteurGauche->Location = System::Drawing::Point(813, 522);
+			this->lbMoteurGauche->Location = System::Drawing::Point(685, 336);
 			this->lbMoteurGauche->Name = L"lbMoteurGauche";
 			this->lbMoteurGauche->Size = System::Drawing::Size(16, 13);
 			this->lbMoteurGauche->TabIndex = 9;
@@ -255,7 +243,7 @@ namespace Wifibot {
 			// lbMoteurDroite
 			// 
 			this->lbMoteurDroite->AutoSize = true;
-			this->lbMoteurDroite->Location = System::Drawing::Point(813, 543);
+			this->lbMoteurDroite->Location = System::Drawing::Point(685, 357);
 			this->lbMoteurDroite->Name = L"lbMoteurDroite";
 			this->lbMoteurDroite->Size = System::Drawing::Size(16, 13);
 			this->lbMoteurDroite->TabIndex = 10;
@@ -264,7 +252,7 @@ namespace Wifibot {
 			// lbBatterie
 			// 
 			this->lbBatterie->AutoSize = true;
-			this->lbBatterie->Location = System::Drawing::Point(813, 502);
+			this->lbBatterie->Location = System::Drawing::Point(685, 316);
 			this->lbBatterie->Name = L"lbBatterie";
 			this->lbBatterie->Size = System::Drawing::Size(16, 13);
 			this->lbBatterie->TabIndex = 11;
@@ -273,7 +261,7 @@ namespace Wifibot {
 			// lbIRGauche
 			// 
 			this->lbIRGauche->AutoSize = true;
-			this->lbIRGauche->Location = System::Drawing::Point(813, 563);
+			this->lbIRGauche->Location = System::Drawing::Point(685, 377);
 			this->lbIRGauche->Name = L"lbIRGauche";
 			this->lbIRGauche->Size = System::Drawing::Size(16, 13);
 			this->lbIRGauche->TabIndex = 12;
@@ -282,7 +270,7 @@ namespace Wifibot {
 			// lbIRDroite
 			// 
 			this->lbIRDroite->AutoSize = true;
-			this->lbIRDroite->Location = System::Drawing::Point(813, 585);
+			this->lbIRDroite->Location = System::Drawing::Point(685, 399);
 			this->lbIRDroite->Name = L"lbIRDroite";
 			this->lbIRDroite->Size = System::Drawing::Size(16, 13);
 			this->lbIRDroite->TabIndex = 13;
@@ -291,7 +279,7 @@ namespace Wifibot {
 			// label2
 			// 
 			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(721, 503);
+			this->label2->Location = System::Drawing::Point(593, 317);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(46, 13);
 			this->label2->TabIndex = 15;
@@ -300,7 +288,7 @@ namespace Wifibot {
 			// label3
 			// 
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(721, 522);
+			this->label3->Location = System::Drawing::Point(593, 336);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(81, 13);
 			this->label3->TabIndex = 16;
@@ -309,7 +297,7 @@ namespace Wifibot {
 			// label4
 			// 
 			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(721, 543);
+			this->label4->Location = System::Drawing::Point(593, 357);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(65, 13);
 			this->label4->TabIndex = 17;
@@ -318,7 +306,7 @@ namespace Wifibot {
 			// label5
 			// 
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(721, 563);
+			this->label5->Location = System::Drawing::Point(593, 377);
 			this->label5->Name = L"label5";
 			this->label5->Size = System::Drawing::Size(59, 13);
 			this->label5->TabIndex = 18;
@@ -327,17 +315,23 @@ namespace Wifibot {
 			// label6
 			// 
 			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(721, 585);
+			this->label6->Location = System::Drawing::Point(593, 399);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(43, 13);
 			this->label6->TabIndex = 19;
 			this->label6->Text = L"IR Droit";
 			// 
+			// bgWorker
+			// 
+			this->bgWorker->WorkerReportsProgress = true;
+			this->bgWorker->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &Form1::bgWorker_DoWork);
+			this->bgWorker->ProgressChanged += gcnew System::ComponentModel::ProgressChangedEventHandler(this, &Form1::bgWorker_ProgressChanged);
+			// 
 			// Form1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(996, 627);
+			this->ClientSize = System::Drawing::Size(743, 428);
 			this->Controls->Add(this->label6);
 			this->Controls->Add(this->label5);
 			this->Controls->Add(this->label4);
@@ -354,12 +348,10 @@ namespace Wifibot {
 			this->Controls->Add(this->btAvant);
 			this->Controls->Add(this->btStop);
 			this->Controls->Add(this->btArriere);
-			this->Controls->Add(this->btDeconnecter);
 			this->Controls->Add(this->btConnecter);
 			this->Controls->Add(this->groupBox1);
 			this->Name = L"Form1";
 			this->Text = L"Form1";
-			this->Load += gcnew System::EventHandler(this, &Form1::Form1_Load);
 			this->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyDown);
 			this->KeyUp += gcnew System::Windows::Forms::KeyEventHandler(this, &Form1::Form1_KeyUp);
 			this->groupBox1->ResumeLayout(false);
@@ -368,121 +360,145 @@ namespace Wifibot {
 			this->PerformLayout();
 
 		}
-#pragma endregion  Windows Form Designer generated code
 
-//Connecte le robot, ou reinitialise la connection si on est deja connectés
-private: System::Void btConnecter_Click(System::Object^  sender, System::EventArgs^  e)
-		{
-					if(rbSimulateur->Checked)
-					{								
-						//robot.DisconnectRobot();
+	#pragma endregion Winform
+		
 
-						char ip[20]="127.0.0.1";		//localhost
-						int port=15020;					//port TCP
+		private: System::Void btConnecter_Click(System::Object^  sender, System::EventArgs^  e)
+		{//Connecte ou déconnecte le client
+			
 
-						robot.ConnectToRobot(ip,port);	//connection
-					}
-					
-					else if(rbRobot->Checked)
-					{								
-						//robot.DisconnectRobot();
+			if (connexionReussie)		//On est déjà connécté
+			{	//On arrête le robot puis on se déconnecte
+				 timer1->Stop();
+				 robot.DisconnectRobot();
+				 connexionReussie = false;
+			}
+			else
+			{
+				if (rbSimulateur->Checked)		//On veut se connecter au simulateur
+				{
+					//robot.DisconnectRobot();
 
-						char ip[20]="192.168.1.106";		//localhost
-						int port=15010;					//port TCP
+					char ip[20] = "127.0.0.1";		//localhost
+					int port = 15020;					//port TCP
 
-						robot.ConnectToRobot(ip,port);	//connection
-					}
+					connexionReussie = !robot.ConnectToRobot(ip, port);	//connection
+				}
+
+				else if (rbRobot->Checked)		//On veut se connecter au robot
+				{
+					//robot.DisconnectRobot();
+
+					char ip[20] = "192.168.1.106";		//localhost
+					int port = 15010;					//port TCP
+
+					connexionReussie = !robot.ConnectToRobot(ip, port);	//connection
+				}
+
+
+			}
+				if (connexionReussie)		//On met à jour le texte du bouton de connexion
+					btConnecter->Text = "Déconnecter";
+				else
+					btConnecter->Text = "Connecter";
+
+				//Pour plus tard:
+				//bgWorker->RunWorkerAsync();	//On lance le 2nd thread	(la fonction bgWorker_DoWork se lance)
 
 		}
 
-private: System::Void Form1_Load(System::Object^  sender, System::EventArgs^  e)
-		{
-			timer1->Interval=400;		// Quand un boutton est préssé, le timer renvoie la consigne toutes les 400ms	 
+		private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e)
+		{					
+			if (rbSimulateur->Checked)
+				robot.SendConsigne(direction);		//Simulateur : pas de CRC
+			else if (rbRobot->Checked)
+				robot.SendConsigneCRC(direction);	//Robot : besoin d'un CRC
+					 
+			robot.GetSensorData(&capteurs);			//Actualise les données des capteurs
+
+			lbBatterie->Text =		"" +capteurs.BatVoltage;		//puis on les affiche
+			lbMoteurDroite->Text =	"" +capteurs.SpeedFrontRight;
+			lbMoteurGauche->Text =	"" +capteurs.SpeedFrontLeft;
+			lbIRDroite->Text =		"" +capteurs.IRRight;
+			lbIRGauche->Text =		"" +capteurs.IRLeft;
 		}
 
-private: System::Void timer1_Tick(System::Object^  sender, System::EventArgs^  e)
-		 {
-						 	robot.SendConsigne(direction);
-							robot.GetSensorData(&capteurs);
-
-							lbBatterie->Text =		"" +capteurs.BatVoltage;
-							lbMoteurDroite->Text =	"" +capteurs.SpeedFrontRight;
-							lbMoteurGauche->Text =	"" +capteurs.SpeedFrontLeft;
-							lbIRDroite->Text =		"" +capteurs.IRRight;
-							lbIRGauche->Text =		"" +capteurs.IRLeft;
-		 }
-
-private: System::Void btStop_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {			
-				
+		private: System::Void btStop_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {			//On s'arrête
 				direction.y=0;
 				direction.x=0;
-		 }
-private: System::Void btDeconnecter_Click(System::Object^  sender, System::EventArgs^  e)
-		 {
-			robot.DisconnectRobot();
-			timer1->Stop();
+				timer1->Stop();
 		 }
 
-private: System::Void btDroite_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			gauche=(int) (gauche*1.4);
-			droite=(int) (droite/1.4);								
-			direction.GAUCHE=gauche;
-			direction.DROITE=droite;
+		private: System::Void btDroite_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {//On accelére la roue gauche et ralentit la roue droite
+					 
+			//gauche=(int) (gauche*1.4);
+			//droite=(int) (droite/1.4);								
+					 direction.GAUCHE = (int)(gauche*1.4);
+			direction.DROITE = (int)(droite / 1.4);
 			timer1->Start();
 		 }
-private: System::Void btDroite_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			 timer1->Stop();
+		private: System::Void btDroite_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {	//On s'arrête
+			 //timer1->Stop();
+
+			direction.y = gauche;								//On a relaché le bouton, on reprend la direction precedente (avant ou arriere)
+			direction.x = droite;
 		 }
 
-private: System::Void btGauche_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			gauche=(int) (gauche/1.4);
-			droite=(int) (droite*1.4);								
-			direction.GAUCHE=gauche;
-			direction.DROITE=droite;
+		private: System::Void btGauche_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		{	//On accélére la roue droite, et on ralentit la roue gauche
+			//gauche=(int) (gauche/1.4);
+			//droite=(int) (droite*1.4);								
+			direction.GAUCHE = (int)(gauche / 1.4);
+			direction.DROITE = (int)(droite*1.4);
 			timer1->Start();
-		 }
-private: System::Void btGauche_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			 timer1->Stop();
+		}
+		private: System::Void btGauche_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {//On s'arrête
+			// timer1->Stop();
+
+			direction.y = gauche;								//On a relaché le bouton, on reprend la direction precedente (avant ou arriere)
+			direction.x = droite;
 		 }
 
-private: System::Void btArriere_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
+		private: System::Void btArriere_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {	//On recule tout droit
 			 droite =-20;
 			 gauche= -20;
 			 direction.GAUCHE=gauche;
 			 direction.DROITE=droite;
 			 timer1->Start();
 		 }
-private: System::Void btArriere_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			 timer1->Stop();
+		private: System::Void btArriere_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {	//On s'arrête
+			// timer1->Stop();
 		 }
 
-private: System::Void btAvant_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
+		private: System::Void btAvant_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {	//On avance tout droit
 			 droite =20;
 			 gauche= 20;
 			 direction.GAUCHE=gauche;
 			 direction.DROITE=droite;
 			 timer1->Start();
 		 }
-private: System::Void btAvant_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
-		 {
-			 timer1->Stop();
+		private: System::Void btAvant_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e)
+		 {//On s'arrête
+			 //timer1->Stop();
 		 }
 
-private: System::Void btStop_Click(System::Object^  sender, System::EventArgs^  e)
-		 {
+		private: System::Void btStop_Click(System::Object^  sender, System::EventArgs^  e)
+		{//On s'arrête
 			timer1->Stop();
-		 }
+		}
 
-private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e)
-		 {
+		private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e)
+		 {//Controle le robot avec ZQSD / Espace pour l'arrêter
+
+
 			switch (e->KeyCode)
             {
                 case Keys::Z :	  gauche=20;
@@ -519,46 +535,9 @@ private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Fo
 
 		}
 
+		/* Alternative switch */
 
-
-			
-			switch (e->KeyCode)
-            {
-                case Keys::Z :	  gauche=20;
-								  droite=20;
-								  direction.GAUCHE=gauche;
-								  direction.DROITE=droite;
-								  timer1->Start();
-								  break;
-               
-				case Keys::Q :				
-								  direction.GAUCHE=(int)(gauche/1.4);
-								  direction.DROITE=(int)(droite*1.4);
-								  timer1->Start();
-								  break;
-                
-				case Keys::S :	  droite=-20;
-								  gauche=-20;
-								  direction.GAUCHE=gauche;
-								  direction.DROITE=droite;
-								  timer1->Start();
-								  break;
-
-                case Keys::D :	  direction.GAUCHE=(int) (gauche*1.4);
-								  direction.DROITE=(int) (droite/1.4);
-								  timer1->Start();
-								  break;
-
-				case Keys::Space: gauche=0;
-								  droite=0;									
-								  direction.GAUCHE=gauche;
-								  direction.DROITE=droite;
-
-				default :;	
-
-		}
-
-		/*
+				/*
                 if(e->KeyCode==Keys::Z)
 				{
 					gauche=20;
@@ -598,16 +577,27 @@ private: System::Void Form1_KeyDown(System::Object^  sender, System::Windows::Fo
 					direction.GAUCHE=gauche;
 					direction.DROITE=droite;
 				}*/
-		 }
-private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e)
-		 {
+		}
+		private: System::Void Form1_KeyUp(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e)
+		{
 			//if(chkAvanceAuto->ThreeState==false)			//Si la checkbox est décochée	
-				//timer1->Stop();
+				timer1->Stop();
 			
 				direction.y=gauche;								//On a relaché le bouton, on reprend la direction precedente (avant ou arriere)
 				direction.x=droite;
-		 }
 
-};
+		}
+
+		private: System::Void bgWorker_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e)
+		{	//travail effectué par le second thread
+
+			//Threading::Thread::Sleep(100);
+			//bgWorker->ReportProgress(i); // informe le thread principale du progrés de la tache secondaire,  i est le pourcentage effectué
+		}
+		private: System::Void bgWorker_ProgressChanged(System::Object^  sender, System::ComponentModel::ProgressChangedEventArgs^  e)
+		{	//Tache efféctué a chaque fois que le thread secondaire nous informe de son progrés
+
+		}
+	};
 }
 

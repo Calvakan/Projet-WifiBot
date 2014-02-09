@@ -1,4 +1,5 @@
-#include "StdAfx.h"
+
+#include "stdafx.h"
 #include "wifibotClient.h"
 
 WifibotClient::WifibotClient(void)
@@ -40,7 +41,7 @@ bool WifibotClient::ConnectToRobot(char* ip,int port)
 	if(socketnotok)
 	{
 		char szServerAddress[30];
-		sprintf(szServerAddress,"%s",ip);
+		sprintf_s(szServerAddress,"%s",ip);
 		int iPort=port;
 		
 		WSAStartup(MAKEWORD(2,2),&wsatcp);
@@ -98,8 +99,8 @@ bool WifibotClient::ConnectToRobotUdp(char* ip,int port)
 {		
 	if(socketnotokudp)
 	{
-		char szServerAddress[30];
-		sprintf(myipsend,"%s",ip);
+		//char szServerAddress[30];
+		sprintf_s(myipsend,"%s",ip);
 		
 		myportsend=port;
 			
@@ -137,6 +138,47 @@ void WifibotClient::SendConsigne(CPoint point)
     sendbuf[1]=(char)(point.y);
 	if (!socketnotok) send(socktcp,sendbuf,2,0);
 }
+
+void WifibotClient::SendConsigneCRC(CPoint point)
+{
+
+	sendBuffer[0] = 255;
+	sendBuffer[1] = 0x07;
+	sendBuffer[2] = (byte)(point.y);		//Gauche 1
+	sendBuffer[3] = (byte)(point.y >> 8);	//Gauche 2
+	sendBuffer[4] = (char)(point.x);		//Droite 1
+	sendBuffer[5] = (char)(point.x >> 8);;	//Droite 2
+	sendBuffer[6] = 0;						//Flags
+	
+	short crc = Crc16(sendBuffer + 1, 6);
+	sendBuffer[7] = (byte)crc;
+	sendBuffer[8] = (byte)(crc >> 8);
+
+	if (!socketnotok) send(socktcp, (const char*)sendBuffer, 8, 0);
+}
+
+short WifibotClient::Crc16(unsigned char *Adresse_tab, unsigned char Taille_max)
+{
+	unsigned int Crc = 0xFFFF;
+	unsigned int Polynome = 0xA001;
+	unsigned int CptOctet = 0;
+	unsigned int CptBit = 0;
+	unsigned int Parity = 0;
+	Crc = 0xFFFF;
+	Polynome = 0xA001;
+	for (CptOctet = 0; CptOctet < Taille_max; CptOctet++)
+	{
+		Crc ^= *(Adresse_tab + CptOctet);
+		for (CptBit = 0; CptBit <= 7; CptBit++)
+		{
+			Parity = Crc;
+			Crc >>= 1;
+			if (Parity % 2 == 1) Crc ^= Polynome;
+		}
+	}
+	return(Crc);
+}
+
 
 void WifibotClient::SendConsigneUdp(CPoint point)
 {	
@@ -311,7 +353,7 @@ DWORD WINAPI WifibotClient::Thread_TCP(LPVOID p)
 void WifibotClient::Thread_TCP_Trooper_In(void) 
 {
 	// Source address of echo
-	SOCKADDR_IN fromAddr;   
+	//SOCKADDR_IN fromAddr;   
 	WSAStartup(MAKEWORD(2,2),&wsaOut);
 	sockOut=socket(AF_INET,SOCK_DGRAM,0);//On initialise le socket avec SOCK_DGRAM pour dire qu'on est en UDP
 
@@ -326,7 +368,7 @@ void WifibotClient::Thread_TCP_Trooper_In(void)
 while(Thread_TCP_Trooper_In_Run)
 	{		
 	// In-out address size for RecvFrom()
-  int fromSize = sizeof(fromAddr); 
+	int fromSize = sizeof(SOCKADDR_IN);
 
   while (!okOut)
   {
@@ -350,7 +392,7 @@ while(Thread_TCP_Trooper_In_Run)
 	//else
 	{
 	memset(buffso_sendIN,0,20);
-	sprintf(buffso_sendIN,"data");
+	sprintf_s(buffso_sendIN, "data");
 	if (sendto(sockOut,buffso_sendIN,20,0,(SOCKADDR*)&sinOut,sizeof(sinOut))==20)
 	{
 	//	mutexRcv.acquire();
@@ -415,7 +457,7 @@ while(Thread_TCP_Trooper_Out_Run)
 	{
 		memset(buffso_sendOUT,0,20);
 		mutexSend.acquire();
-		sprintf(buffso_sendOUT,"speed %c %c",pointy,pointx);
+		sprintf_s(buffso_sendOUT, "speed %c %c", pointy, pointx);
 		mutexSend.release();		
 	}
 	Sleep(1);
