@@ -148,7 +148,7 @@ void WifibotClient::SendConsigneCRC(CPoint point)
 	sendBuffer[3] = (byte)(point.y >> 8);	//Gauche 2
 	sendBuffer[4] = (char)(point.x);		//Droite 1
 	sendBuffer[5] = (char)(point.x >> 8);;	//Droite 2
-	sendBuffer[6] = 0;						//Flags
+	sendBuffer[6] = 0;						//Flags : à compléter ! ! !
 	
 	short crc = Crc16(sendBuffer + 1, 6);
 	sendBuffer[7] = (byte)crc;
