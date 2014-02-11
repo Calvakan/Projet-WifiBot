@@ -133,28 +133,57 @@ void WifibotClient::DisconnectRobotUdp()
 }
 
 void WifibotClient::SendConsigne(CPoint point)
-{
+{	//Envoi la consigne pour le simulateur
 	sendbuf[0]=(char)(point.x);
     sendbuf[1]=(char)(point.y);
 	if (!socketnotok) send(socktcp,sendbuf,2,0);
 }
 
 void WifibotClient::SendConsigneCRC(CPoint point)
-{
-
+{	//Envoi la consigne pour le robot, à vérifier
+	unsigned char sendBuffer[30];
+	BYTE flag = 0;
 	sendBuffer[0] = 255;
 	sendBuffer[1] = 0x07;
-	sendBuffer[2] = (byte)(point.y);		//Gauche 1
-	sendBuffer[3] = (byte)(point.y >> 8);	//Gauche 2
-	sendBuffer[4] = (char)(point.x);		//Droite 1
-	sendBuffer[5] = (char)(point.x >> 8);;	//Droite 2
-	sendBuffer[6] = 0;						//Flags : à compléter ! ! !
-	
-	short crc = Crc16(sendBuffer + 1, 6);
-	sendBuffer[7] = (byte)crc;
-	sendBuffer[8] = (byte)(crc >> 8);
 
-	if (!socketnotok) send(socktcp, (const char*)sendBuffer, 8, 0);
+	unsigned char droite = (unsigned char)(point.x);
+	unsigned char gauche = (unsigned char)(point.y);
+
+	int tmp1 = 8 * (droite & 0x3F);
+	int tmp2 = 8 * (gauche & 0x3F);
+
+	if (gauche & 0x80)
+		flag += 32;
+
+	if (gauche & 0x40)
+		flag += 16;
+
+	sendBuffer[2] = (unsigned)tmp1;
+	sendBuffer[3] = (unsigned)(tmp1 >> 8);
+	sendBuffer[4] = (unsigned)tmp2;
+	sendBuffer[5] = (unsigned)(tmp2 >> 8);
+	sendBuffer[6] = (droite & 0x80) + (droite & 0x40) + flag + 0 + 2 + 8 + 1;//+1 Relay ON +8 10ms pid mode ;
+
+	/*
+	Char 7 is decomposed as follow (1 byte char -> 8 bits):
+	(128) Bit 7 Left Side Closed Loop Speed control :: 1 -> ON / 0 -> OFF
+	(64) Bit 6 Left Side Forward / Backward speed flag :: 1 -> Forward / 0 -> Reverse
+	(32) Bit 5 Right Side Closed Loop Speed control :: 1 -> ON / 0 -> OFF
+	(16) Bit 4 Right Side Forward / Backward speed flag :: 1 -> Forward / 0 -> Reverse
+	(8) Bit 3 Relay 4 On/Off (DSUB15 POWER Pin 13 and 14)
+	(4) Bit 2 Relay 3 On/Off (DSUB15 POWER Pin 11 and 12)
+	(2) Bit 1 Relay 2 On/Off (DSUB15 POWER Pin 4 and 5)
+	(1) Bit 0 Relay 1 for Sensors. On/Off: 0 is OFF 1 is ON (DSUB15 POWER Pin 3)
+	*/
+
+	short crc = Crc16((unsigned char*)sendBuffer + 1, 6);
+
+	sendBuffer[7] = (unsigned)crc;
+	sendBuffer[8] = (unsigned)(crc >> 8);
+
+	if (!socketnotok) 
+		send(socktcp, (char*)sendBuffer, 9, 0);		// tester avec 8, 0  si ça marche pas
+
 }
 
 short WifibotClient::Crc16(unsigned char *Adresse_tab, unsigned char Taille_max)
